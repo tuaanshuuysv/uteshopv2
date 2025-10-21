@@ -11,13 +11,14 @@ import jakarta.servlet.http.Cookie;
 import vn.ute.uteshop.services.AuthService;
 import vn.ute.uteshop.dto.AuthDtos;
 import vn.ute.uteshop.common.Enums;
+import vn.ute.uteshop.common.AppConstants;
 
 import java.io.IOException;
 
 /**
  * AuthController - Complete Authentication Controller for UTESHOP-CPL
  * Created by tuaanshuuysv on 2025-10-19
- * Updated: 2025-10-19 23:01:11 UTC
+ * Updated: 2025-10-21 00:28:23 UTC - Fixed cookie names and JWT token flow
  * Features: Login, Register, OTP Verification, Forgot Password, Reset Password
  * Compatible with: Tomcat 10.x, Jakarta EE, MySQL 8.x
  */
@@ -38,9 +39,10 @@ public class AuthController extends HttpServlet {
         super.init();
         this.authService = new AuthService();
         System.out.println("✅ AuthController initialized successfully");
-        System.out.println("🕐 Current UTC: 2025-10-19 23:01:11");
+        System.out.println("🕐 Current UTC: 2025-10-21 00:28:23");
         System.out.println("👨‍💻 Created by: tuaanshuuysv");
         System.out.println("🔧 Supported endpoints: /login, /register, /verify-otp, /forgot-password, /reset-password, /logout");
+        System.out.println("🔒 Fixed: Cookie names, JWT flow, session handling");
     }
 
     /**
@@ -134,7 +136,7 @@ public class AuthController extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
             System.out.println("👤 User already logged in, redirecting to home");
-            response.sendRedirect(request.getContextPath() + "/");
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
         
@@ -207,7 +209,7 @@ public class AuthController extends HttpServlet {
     // ================== POST ACTION HANDLERS ==================
 
     /**
-     * Handle user login
+     * ✅ FIXED: Handle user login with correct cookie name
      */
     private void handleLogin(HttpServletRequest request, HttpServletResponse response) 
             throws IOException, ServletException {
@@ -239,15 +241,16 @@ public class AuthController extends HttpServlet {
             
             System.out.println("🔑 Session created for user: " + loginResponse.getUser().getUsername());
             
-            // Set remember me cookie if requested
-            if (shouldRemember) {
-                Cookie rememberCookie = new Cookie("rememberMe", loginResponse.getToken());
-                rememberCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-                rememberCookie.setPath("/");
-                rememberCookie.setHttpOnly(true);
-                response.addCookie(rememberCookie);
-                System.out.println("🍪 Remember me cookie set");
-            }
+            // ✅ FIX: Set JWT cookie with correct name from AppConstants
+            // Always set cookie for authentication - not just for remember me
+            Cookie jwtCookie = new Cookie(AppConstants.COOKIE_TOKEN, loginResponse.getToken());
+            jwtCookie.setMaxAge(shouldRemember ? (7 * 24 * 60 * 60) : (24 * 60 * 60)); // 7 days or 24 hours
+            jwtCookie.setPath("/");
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setSecure(false); // Set to true in production with HTTPS
+            response.addCookie(jwtCookie);
+            System.out.println("🍪 JWT cookie set with name: " + AppConstants.COOKIE_TOKEN);
+            System.out.println("⏰ Cookie expires in: " + (shouldRemember ? "7 days" : "24 hours"));
             
             // Redirect to intended page or home
             String redirectUrl = (String) session.getAttribute("redirectAfterLogin");
@@ -257,7 +260,7 @@ public class AuthController extends HttpServlet {
                 response.sendRedirect(redirectUrl);
             } else {
                 System.out.println("🏠 Redirecting to home page");
-                response.sendRedirect(request.getContextPath() + "/");
+                response.sendRedirect(request.getContextPath() + "/home"); // ✅ FIX: Redirect to /home
             }
             
         } else {
@@ -455,7 +458,7 @@ public class AuthController extends HttpServlet {
     }
 
     /**
-     * Handle user logout
+     * ✅ FIXED: Handle user logout with correct cookie name
      */
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) 
             throws IOException, ServletException {
@@ -475,12 +478,13 @@ public class AuthController extends HttpServlet {
             System.out.println("🗑️ Session invalidated");
         }
         
-        // Remove remember me cookie
-        Cookie rememberCookie = new Cookie("rememberMe", "");
-        rememberCookie.setMaxAge(0);
-        rememberCookie.setPath("/");
-        response.addCookie(rememberCookie);
-        System.out.println("🍪 Remember me cookie cleared");
+        // ✅ FIX: Clear JWT cookie with correct name from AppConstants
+        Cookie jwtCookie = new Cookie(AppConstants.COOKIE_TOKEN, "");
+        jwtCookie.setMaxAge(0);
+        jwtCookie.setPath("/");
+        jwtCookie.setHttpOnly(true);
+        response.addCookie(jwtCookie);
+        System.out.println("🍪 JWT cookie cleared: " + AppConstants.COOKIE_TOKEN);
         
         // Redirect to login with success message
         request.setAttribute("success", "Đăng xuất thành công! Hẹn gặp lại bạn.");
@@ -490,64 +494,10 @@ public class AuthController extends HttpServlet {
         System.out.println("✅ Logout completed successfully");
     }
 
-    // ================== UTILITY METHODS ==================
-
-    /**
-     * Validate email format
-     */
-    private boolean isValidEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            return false;
-        }
-        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    }
-
-    /**
-     * Validate OTP format
-     */
-    private boolean isValidOtp(String otp) {
-        if (otp == null || otp.trim().isEmpty()) {
-            return false;
-        }
-        return otp.matches("^\\d{6}$");
-    }
-
-    /**
-     * Log request information for debugging
-     */
-    private void logRequestInfo(HttpServletRequest request) {
-        System.out.println("🔍 Request Info:");
-        System.out.println("   Method: " + request.getMethod());
-        System.out.println("   URI: " + request.getRequestURI());
-        System.out.println("   Query: " + request.getQueryString());
-        System.out.println("   Remote IP: " + request.getRemoteAddr());
-        System.out.println("   User Agent: " + request.getHeader("User-Agent"));
-    }
-
-    /**
-     * Health check method
-     */
-    public boolean healthCheck() {
-        try {
-            boolean authServiceHealthy = (authService != null && authService.healthCheck());
-            
-            System.out.println("💊 AuthController Health Check:");
-            System.out.println("   AuthService: " + (authServiceHealthy ? "✅ OK" : "❌ FAIL"));
-            System.out.println("   Servlet Context: ✅ OK");
-            System.out.println("   Current Time: 2025-10-19 23:01:11 UTC");
-            
-            return authServiceHealthy;
-            
-        } catch (Exception e) {
-            System.err.println("❌ AuthController health check failed: " + e.getMessage());
-            return false;
-        }
-    }
-
     @Override
     public void destroy() {
         System.out.println("🗑️ AuthController destroying...");
-        System.out.println("👋 AuthController destroyed at: 2025-10-19 23:01:11 UTC");
+        System.out.println("👋 AuthController destroyed at: 2025-10-21 00:28:23 UTC");
         super.destroy();
     }
 }

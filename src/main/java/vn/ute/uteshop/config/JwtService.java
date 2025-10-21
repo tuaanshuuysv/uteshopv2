@@ -7,6 +7,11 @@ import vn.ute.uteshop.model.User;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+/**
+ * JwtService - Complete JWT Service with fixes for UTESHOP-CPL
+ * Updated: 2025-10-21 00:28:23 UTC - Added missing isTokenValid method
+ * Created by tuaanshuuysv
+ */
 public class JwtService {
     // Secret key phải đủ dài cho HS256 (ít nhất 32 bytes = 256 bits)
     private static final String SECRET_KEY = "uteshop-cpl-secret-key-for-tuaanshuuysv-2025-very-long-secret-must-be-at-least-256-bits";
@@ -15,7 +20,7 @@ public class JwtService {
 
     public static String generateToken(User user) {
         try {
-            return Jwts.builder()
+            String token = Jwts.builder()
                     .subject(user.getUserId().toString())
                     .claim("username", user.getUsername())
                     .claim("email", user.getEmail())
@@ -27,6 +32,11 @@ public class JwtService {
                     .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                     .signWith(key, Jwts.SIG.HS256)
                     .compact();
+            
+            System.out.println("🔑 JWT token generated for user: " + user.getEmail());
+            System.out.println("⏰ Token expires at: " + new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+            return token;
+            
         } catch (Exception e) {
             System.err.println("❌ JWT generation failed: " + e.getMessage());
             e.printStackTrace();
@@ -36,11 +46,15 @@ public class JwtService {
 
     public static Claims validateToken(String token) {
         try {
-            return Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+            
+            System.out.println("✅ JWT token validated for user: " + claims.get("email"));
+            return claims;
+            
         } catch (ExpiredJwtException e) {
             System.err.println("❌ JWT token expired: " + e.getMessage());
             return null;
@@ -64,7 +78,9 @@ public class JwtService {
         try {
             Claims claims = validateToken(token);
             if (claims != null) {
-                return Integer.parseInt(claims.getSubject());
+                Integer userId = Integer.parseInt(claims.getSubject());
+                System.out.println("🆔 Extracted user ID from token: " + userId);
+                return userId;
             }
         } catch (NumberFormatException e) {
             System.err.println("❌ Invalid user ID in JWT token: " + e.getMessage());
@@ -76,12 +92,29 @@ public class JwtService {
         try {
             Claims claims = validateToken(token);
             if (claims != null) {
-                return claims.getExpiration().before(new Date());
+                boolean expired = claims.getExpiration().before(new Date());
+                System.out.println("⏰ Token expired check: " + expired);
+                return expired;
             }
         } catch (Exception e) {
             System.err.println("❌ Error checking token expiration: " + e.getMessage());
         }
         return true; // Consider expired if any error
+    }
+
+    /**
+     * ✅ ADDED: Missing method that JwtAuthFilter uses
+     */
+    public static boolean isTokenValid(String token) {
+        try {
+            Claims claims = validateToken(token);
+            boolean valid = claims != null && !isTokenExpired(token);
+            System.out.println("🔍 Token validity check: " + valid);
+            return valid;
+        } catch (Exception e) {
+            System.err.println("❌ Token validation failed: " + e.getMessage());
+            return false;
+        }
     }
 
     public static String getUsernameFromToken(String token) {
@@ -118,16 +151,6 @@ public class JwtService {
             System.err.println("❌ Error extracting roleId from token: " + e.getMessage());
         }
         return null;
-    }
-
-    public static boolean isTokenValid(String token) {
-        try {
-            Claims claims = validateToken(token);
-            return claims != null && !isTokenExpired(token);
-        } catch (Exception e) {
-            System.err.println("❌ Error validating token: " + e.getMessage());
-            return false;
-        }
     }
 
     // Utility method to refresh token
@@ -167,9 +190,26 @@ public class JwtService {
                 System.out.println("   Issued At: " + claims.getIssuedAt());
                 System.out.println("   Expires At: " + claims.getExpiration());
                 System.out.println("   Is Expired: " + isTokenExpired(token));
+                System.out.println("   Current Time: " + new Date());
             }
         } catch (Exception e) {
             System.err.println("❌ Error logging token info: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Health check method
+     */
+    public static boolean healthCheck() {
+        try {
+            System.out.println("💊 JwtService Health Check:");
+            System.out.println("   Secret Key Length: " + SECRET_KEY.length() + " bytes");
+            System.out.println("   Expiration Time: " + (EXPIRATION_TIME / 1000 / 60 / 60) + " hours");
+            System.out.println("   Current Time: " + new Date());
+            return true;
+        } catch (Exception e) {
+            System.err.println("❌ JwtService health check failed: " + e.getMessage());
+            return false;
         }
     }
 }
