@@ -1,8 +1,9 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<!-- UTESHOP-CPL - Admin Dashboard Home -->
-<!-- Created: 2025-10-21 03:29:03 UTC by tuaanshuuysv -->
+<!-- UTESHOP-CPL - Fixed Admin Dashboard Home -->
+<!-- Fixed: 2025-10-22 04:17:30 UTC by tuaanshuuysv -->
+<!-- Added: Correct links to UserManagementController -->
 
 <div class="admin-dashboard">
     
@@ -21,20 +22,22 @@
                             <span class="badge bg-danger me-2">
                                 <i class="fas fa-shield-alt"></i> Super Admin
                             </span>
-                            <span class="text-muted">
+                            <span class="badge bg-success">
                                 <i class="fas fa-clock"></i> Đăng nhập: ${serverTime}
                             </span>
                         </div>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <div class="system-status">
+                    <div class="col-md-4">
+                        <div class="system-status text-end">
                             <div class="status-item">
-                                <span class="status-indicator online"></span>
-                                <span>Hệ thống hoạt động</span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-database"></i> Database kết nối
+                                </span>
                             </div>
                             <div class="status-item">
-                                <span class="status-indicator online"></span>
-                                <span>Database kết nối</span>
+                                <span class="badge bg-info">
+                                    <i class="fas fa-server"></i> Server: ${systemStatus}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -44,9 +47,9 @@
     </section>
 
     <!-- System Overview -->
-    <section class="system-overview">
+    <section class="admin-overview">
         <div class="container">
-            <h3><i class="fas fa-tachometer-alt"></i> Tổng quan hệ thống</h3>
+            <h3><i class="fas fa-chart-line"></i> Tổng quan hệ thống</h3>
             <div class="row">
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="overview-card">
@@ -56,7 +59,7 @@
                         <div class="overview-content">
                             <h3>${totalUsers}</h3>
                             <p>Tổng người dùng</p>
-                            <small class="text-success">${usersTrend} tháng này</small>
+                            <span class="trend positive">${usersTrend} tháng này</span>
                         </div>
                     </div>
                 </div>
@@ -69,7 +72,7 @@
                         <div class="overview-content">
                             <h3>${totalShops}</h3>
                             <p>Tổng shop</p>
-                            <small class="text-success">${shopsTrend} tháng này</small>
+                            <span class="trend positive">${shopsTrend} tháng này</span>
                         </div>
                     </div>
                 </div>
@@ -82,7 +85,7 @@
                         <div class="overview-content">
                             <h3>${totalProducts}</h3>
                             <p>Tổng sản phẩm</p>
-                            <small class="text-success">${productsTrend} tháng này</small>
+                            <span class="trend positive">${productsTrend} tháng này</span>
                         </div>
                     </div>
                 </div>
@@ -90,12 +93,12 @@
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="overview-card">
                         <div class="overview-icon bg-warning">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-chart-bar"></i>
                         </div>
                         <div class="overview-content">
                             <h3>${monthlyRevenue}</h3>
                             <p>Doanh thu tháng</p>
-                            <small class="text-success">${revenueTrend} tháng này</small>
+                            <span class="trend positive">${revenueTrend} tháng này</span>
                         </div>
                     </div>
                 </div>
@@ -103,39 +106,43 @@
         </div>
     </section>
 
-    <!-- Admin Quick Actions -->
+    <!-- Quick Actions -->
     <section class="admin-actions">
         <div class="container">
-            <h3><i class="fas fa-tools"></i> Quản lý nhanh</h3>
+            <h3><i class="fas fa-bolt"></i> Quản lý nhanh</h3>
             <div class="row">
+                
+                <!-- ✅ FIX: QUẢN LÝ NGƯỜI DÙNG - LINK ĐÚNG -->
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="admin-action-card">
                         <div class="action-header bg-primary">
-                            <i class="fas fa-users-cog"></i>
+                            <i class="fas fa-users"></i>
                             <h5>Quản lý người dùng</h5>
                         </div>
                         <div class="action-body">
                             <p>Tìm kiếm và quản lý tài khoản người dùng</p>
                             <div class="action-buttons">
-                                <button class="btn btn-primary btn-sm">
-                                    <i class="fas fa-search"></i> Tìm kiếm User
-                                </button>
-                                <button class="btn btn-outline-primary btn-sm">
+                                <!-- ✅ LINK CHÍNH XÁC ĐẾN USERMANAGEMENTCONTROLLER -->
+                                <a href="${pageContext.request.contextPath}/admin-direct/users" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-list"></i> Tìm kiếm User
+                                </a>
+                                <a href="${pageContext.request.contextPath}/admin-direct/users/add" class="btn btn-outline-primary btn-sm">
                                     <i class="fas fa-plus"></i> Thêm User
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- QUẢN LÝ SHOP -->
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="admin-action-card">
                         <div class="action-header bg-info">
-                            <i class="fas fa-store-alt"></i>
+                            <i class="fas fa-store"></i>
                             <h5>Quản lý Shop</h5>
                         </div>
                         <div class="action-body">
-                            <p>Quản lý và duyệt các cửa hàng</p>
+                            <p>Quản lý và duyệt cửa hàng</p>
                             <div class="action-buttons">
                                 <button class="btn btn-info btn-sm">
                                     <i class="fas fa-list"></i> Danh sách Shop
@@ -148,10 +155,11 @@
                     </div>
                 </div>
 
+                <!-- QUẢN LÝ SẢN PHẨM -->
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="admin-action-card">
                         <div class="action-header bg-success">
-                            <i class="fas fa-boxes"></i>
+                            <i class="fas fa-cube"></i>
                             <h5>Quản lý sản phẩm</h5>
                         </div>
                         <div class="action-body">
@@ -168,6 +176,7 @@
                     </div>
                 </div>
 
+                <!-- QUẢN LÝ DANH MỤC -->
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="admin-action-card">
                         <div class="action-header bg-warning">
@@ -188,6 +197,7 @@
                     </div>
                 </div>
 
+                <!-- CHIẾT KHẤU & KHUYẾN MÃI -->
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="admin-action-card">
                         <div class="action-header bg-danger">
@@ -208,10 +218,11 @@
                     </div>
                 </div>
 
+                <!-- NHÀ VẬN CHUYỂN -->
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="admin-action-card">
                         <div class="action-header bg-secondary">
-                            <i class="fas fa-shipping-fast"></i>
+                            <i class="fas fa-truck"></i>
                             <h5>Nhà vận chuyển</h5>
                         </div>
                         <div class="action-body">
@@ -231,141 +242,51 @@
         </div>
     </section>
 
-    <!-- Notifications & System Status -->
+    <!-- Recent Activities & System Alerts -->
     <section class="admin-notifications">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4><i class="fas fa-history"></i> Hoạt động gần đây</h4>
+                    <h3><i class="fas fa-history"></i> Hoạt động gần đây</h3>
+                    <div class="notification-list">
+                        <div class="notification-item">
+                            <i class="fas fa-user-plus text-primary"></i>
+                            <div class="notification-content">
+                                <p><strong>Người dùng mới đăng ký:</strong> nguyenvana@example.com</p>
+                                <small class="text-muted">5 phút trước</small>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="activity-list">
-                                <div class="activity-item">
-                                    <div class="activity-icon bg-success">
-                                        <i class="fas fa-check"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <h6>Shop "TechStore VN" đã được duyệt</h6>
-                                        <p class="text-muted">Shop bán thiết bị điện tử đã hoàn thành xác thực</p>
-                                        <small class="text-muted">15 phút trước</small>
-                                    </div>
-                                </div>
-
-                                <div class="activity-item">
-                                    <div class="activity-icon bg-warning">
-                                        <i class="fas fa-flag"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <h6>Báo cáo sản phẩm vi phạm</h6>
-                                        <p class="text-muted">Sản phẩm "iPhone fake" bị báo cáo vi phạm bản quyền</p>
-                                        <small class="text-muted">1 giờ trước</small>
-                                    </div>
-                                </div>
-
-                                <div class="activity-item">
-                                    <div class="activity-icon bg-info">
-                                        <i class="fas fa-users"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <h6>Đăng ký tài khoản mới</h6>
-                                        <p class="text-muted">234 tài khoản mới được đăng ký trong 24h qua</p>
-                                        <small class="text-muted">2 giờ trước</small>
-                                    </div>
-                                </div>
-
-                                <div class="activity-item">
-                                    <div class="activity-icon bg-primary">
-                                        <i class="fas fa-shipping-fast"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <h6>Cập nhật phí vận chuyển</h6>
-                                        <p class="text-muted">Đối tác GHN cập nhật bảng giá mới</p>
-                                        <small class="text-muted">3 giờ trước</small>
-                                    </div>
-                                </div>
+                        <div class="notification-item">
+                            <i class="fas fa-store text-info"></i>
+                            <div class="notification-content">
+                                <p><strong>Shop mới chờ duyệt:</strong> Cửa hàng ABC</p>
+                                <small class="text-muted">15 phút trước</small>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <i class="fas fa-flag text-danger"></i>
+                            <div class="notification-content">
+                                <p><strong>Sản phẩm bị báo cáo:</strong> iPhone 15 Pro Max</p>
+                                <small class="text-muted">30 phút trước</small>
                             </div>
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4><i class="fas fa-bell"></i> Cần xử lý</h4>
+                    <h3><i class="fas fa-exclamation-triangle"></i> Cần xử lý</h3>
+                    <div class="alert-list">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-clock"></i>
+                            <strong>${pendingShops}</strong> shop chờ duyệt
                         </div>
-                        <div class="card-body">
-                            <div class="notification-list">
-                                <div class="notification-item priority-high">
-                                    <div class="notif-icon bg-danger">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                    </div>
-                                    <div class="notif-content">
-                                        <h6>${pendingShops} shop chờ duyệt</h6>
-                                        <small>Cần xác thực thông tin</small>
-                                    </div>
-                                </div>
-
-                                <div class="notification-item priority-medium">
-                                    <div class="notif-icon bg-warning">
-                                        <i class="fas fa-flag"></i>
-                                    </div>
-                                    <div class="notif-content">
-                                        <h6>${reportedProducts} báo cáo sản phẩm</h6>
-                                        <small>Cần kiểm duyệt nội dung</small>
-                                    </div>
-                                </div>
-
-                                <div class="notification-item priority-low">
-                                    <div class="notif-icon bg-info">
-                                        <i class="fas fa-question-circle"></i>
-                                    </div>
-                                    <div class="notif-content">
-                                        <h6>${supportTickets} ticket hỗ trợ</h6>
-                                        <small>Khách hàng cần trợ giúp</small>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-flag"></i>
+                            <strong>${reportedProducts}</strong> sản phẩm vi phạm
                         </div>
-                    </div>
-
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h4><i class="fas fa-server"></i> Hệ thống</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="system-metrics">
-                                <div class="metric-item">
-                                    <span class="metric-label">CPU Usage</span>
-                                    <div class="metric-value">
-                                        <div class="progress">
-                                            <div class="progress-bar bg-success" style="width: ${cpuUsage}%"></div>
-                                        </div>
-                                        <span>${cpuUsage}%</span>
-                                    </div>
-                                </div>
-
-                                <div class="metric-item">
-                                    <span class="metric-label">Memory</span>
-                                    <div class="metric-value">
-                                        <div class="progress">
-                                            <div class="progress-bar bg-warning" style="width: ${memoryUsage}%"></div>
-                                        </div>
-                                        <span>${memoryUsage}%</span>
-                                    </div>
-                                </div>
-
-                                <div class="metric-item">
-                                    <span class="metric-label">Storage</span>
-                                    <div class="metric-value">
-                                        <div class="progress">
-                                            <div class="progress-bar bg-info" style="width: ${storageUsage}%"></div>
-                                        </div>
-                                        <span>${storageUsage}%</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-question-circle"></i>
+                            <strong>${supportTickets}</strong> ticket hỗ trợ
                         </div>
                     </div>
                 </div>
@@ -413,26 +334,14 @@
     justify-content: flex-end;
     gap: 8px;
     margin-bottom: 8px;
-    font-size: 0.9rem;
 }
 
-.status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.status-indicator.online {
-    background: #10b981;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
-}
-
-/* System Overview */
-.system-overview {
+/* Overview Cards */
+.admin-overview {
     margin-bottom: 30px;
 }
 
-.system-overview h3 {
+.admin-overview h3 {
     margin-bottom: 20px;
     color: #1f2937;
 }
@@ -442,6 +351,7 @@
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
     gap: 15px;
@@ -450,6 +360,7 @@
 
 .overview-card:hover {
     transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
 .overview-icon {
@@ -476,6 +387,17 @@
     font-size: 0.9rem;
 }
 
+.trend {
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.trend.positive {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
 /* Admin Actions */
 .admin-actions {
     margin-bottom: 30px;
@@ -496,7 +418,8 @@
 }
 
 .admin-action-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
 .action-header {
@@ -506,7 +429,7 @@
 }
 
 .action-header i {
-    font-size: 1.8rem;
+    font-size: 2rem;
     margin-bottom: 10px;
     display: block;
 }
@@ -514,11 +437,11 @@
 .action-header h5 {
     margin: 0;
     font-weight: 600;
-    font-size: 1rem;
 }
 
 .action-body {
     padding: 20px;
+    text-align: center;
 }
 
 .action-body p {
@@ -530,179 +453,80 @@
 .action-buttons {
     display: flex;
     gap: 8px;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
 .action-buttons .btn {
-    flex: 1;
     font-size: 0.8rem;
-    padding: 8px 12px;
-}
-
-/* Cards */
-.card {
-    border: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-.card-header {
-    background: white;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 15px 20px;
-    border-radius: 12px 12px 0 0;
-}
-
-.card-header h4 {
-    margin: 0;
-    color: #1f2937;
-    font-size: 1.1rem;
-}
-
-/* Activity List */
-.activity-list {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.activity-item {
-    display: flex;
-    gap: 15px;
-    padding: 15px 0;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-}
-
-.activity-content h6 {
-    margin-bottom: 5px;
-    color: #1f2937;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.activity-content p {
-    margin-bottom: 5px;
-    color: #6b7280;
-    font-size: 0.8rem;
+    padding: 6px 12px;
 }
 
 /* Notifications */
+.admin-notifications {
+    margin-bottom: 30px;
+}
+
+.admin-notifications h3 {
+    margin-bottom: 20px;
+    color: #1f2937;
+}
+
 .notification-list {
-    max-height: 300px;
-    overflow-y: auto;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .notification-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    transition: all 0.3s ease;
-    cursor: pointer;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #f3f4f6;
 }
 
-.notification-item:hover {
-    background: #e5e7eb;
+.notification-item:last-child {
+    border-bottom: none;
 }
 
-.notification-item.priority-high {
-    border-left: 3px solid #dc2626;
+.notification-item i {
+    font-size: 1.2rem;
 }
 
-.notification-item.priority-medium {
-    border-left: 3px solid #f59e0b;
-}
-
-.notification-item.priority-low {
-    border-left: 3px solid #10b981;
-}
-
-.notif-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.8rem;
-}
-
-.notif-content h6 {
-    margin-bottom: 2px;
-    color: #1f2937;
-    font-weight: 600;
-    font-size: 0.8rem;
-}
-
-.notif-content small {
-    color: #6b7280;
-    font-size: 0.7rem;
-}
-
-/* System Metrics */
-.system-metrics {
-    space-y: 15px;
-}
-
-.metric-item {
-    margin-bottom: 15px;
-}
-
-.metric-label {
-    display: block;
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-bottom: 6px;
-}
-
-.metric-value {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.metric-value .progress {
+.notification-content {
     flex: 1;
-    height: 6px;
-    border-radius: 3px;
 }
 
-.metric-value span {
-    font-size: 0.7rem;
-    color: #1f2937;
-    font-weight: 600;
-    min-width: 30px;
+.notification-content p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alert-list .alert {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .welcome-card h1 {
-        font-size: 1.4rem;
+    .welcome-card {
+        text-align: center;
     }
     
     .system-status {
-        text-align: left;
-        margin-top: 15px;
+        text-align: center;
+        margin-top: 20px;
     }
     
     .overview-card {
@@ -716,20 +540,29 @@
     }
     
     .action-buttons .btn {
-        flex: none;
+        width: 100%;
     }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ UTESHOP-CPL Admin Dashboard loaded');
+    console.log('✅ FIXED Admin Dashboard loaded - 2025-10-22 04:17:30 UTC');
     console.log('🕐 Load time: 2025-10-21 03:34:17 UTC');
-    console.log('👨‍💻 Created by: tuaanshuuysv');
+    console.log('👨‍💻 Fixed by: tuaanshuuysv');
     console.log('👑 Admin: ${authUser.username}');
+    console.log('🔗 Added correct links to UserManagementController');
     
     // Add click handlers for admin action cards
     document.querySelectorAll('.admin-action-card').forEach(card => {
+        const actionButtons = card.querySelectorAll('.action-buttons .btn');
+        
+        // Skip cards that have actual links
+        if (actionButtons.length > 0 && actionButtons[0].tagName.toLowerCase() === 'a') {
+            console.log('✅ Card has real links, skipping click handler');
+            return;
+        }
+        
         card.addEventListener('click', function() {
             const actionName = this.querySelector('h5').textContent;
             console.log('Admin action clicked:', actionName);
@@ -750,49 +583,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Notification item clicks
     document.querySelectorAll('.notification-item').forEach(item => {
         item.addEventListener('click', function() {
-            const title = this.querySelector('h6').textContent;
-            console.log('Notification clicked:', title);
-            
-            // Visual feedback
-            this.style.background = '#dbeafe';
-            setTimeout(() => {
-                this.style.background = '#f8fafc';
-            }, 1000);
+            console.log('Notification clicked:', this.querySelector('p').textContent);
         });
     });
     
-    // Activity item hover effects
-    document.querySelectorAll('.activity-item').forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            this.style.background = '#f9fafb';
-        });
-        
-        item.addEventListener('mouseleave', function() {
-            this.style.background = 'transparent';
+    // Alert clicks
+    document.querySelectorAll('.alert-list .alert').forEach(alert => {
+        alert.addEventListener('click', function() {
+            console.log('Alert clicked:', this.textContent.trim());
         });
     });
-    
-    // System metrics animation
-    document.querySelectorAll('.progress-bar').forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0%';
-        bar.style.transition = 'width 1s ease-in-out';
-        
-        setTimeout(() => {
-            bar.style.width = width;
-        }, 500);
-    });
-    
-    // Auto-refresh system metrics (mock)
-    setInterval(() => {
-        document.querySelectorAll('.progress-bar').forEach(bar => {
-            const currentWidth = parseInt(bar.style.width);
-            const variation = Math.floor(Math.random() * 10) - 5; // ±5%
-            const newWidth = Math.max(10, Math.min(90, currentWidth + variation));
-            
-            bar.style.width = newWidth + '%';
-            bar.nextElementSibling.textContent = newWidth + '%';
-        });
-    }, 30000); // Update every 30 seconds
 });
 </script>

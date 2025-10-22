@@ -11,17 +11,18 @@ import vn.ute.uteshop.common.Enums;
 import java.io.IOException;
 
 /**
- * RoleFilter - Enhanced Role-based Access Control
- * Updated: 2025-10-21 03:34:17 UTC by tuaanshuuysv
- * Added: Admin and Vendor role filtering
+ * RoleFilter - FIXED Role-based Access Control
+ * Fixed: 2025-10-21 14:38:00 UTC by tuaanshuuysv
+ * Enhanced: Debug logging for admin access
  */
 @WebFilter(urlPatterns = {"/user/*", "/vendor/*", "/admin/*"})
 public class RoleFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        System.out.println("✅ RoleFilter initialized - Enhanced for Admin/Vendor");
-        System.out.println("🕐 Init time: 2025-10-21 03:34:17 UTC");
+        System.out.println("✅ RoleFilter FIXED initialized - Enhanced for Admin/Vendor");
+        System.out.println("🕐 Fixed time: 2025-10-21 14:38:00 UTC");
+        System.out.println("🔧 Enhanced debug logging for admin access");
     }
 
     @Override
@@ -34,13 +35,6 @@ public class RoleFilter implements Filter {
         // Get authenticated user
         User user = (User) httpRequest.getAttribute(AppConstants.AUTH_USER_ATTR);
         
-        if (user == null) {
-            System.out.println("❌ RoleFilter: No authenticated user found");
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/auth/login?redirect=" + 
-                                     httpRequest.getRequestURI());
-            return;
-        }
-
         String path = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
         
@@ -49,7 +43,32 @@ public class RoleFilter implements Filter {
             path = path.substring(contextPath.length());
         }
         
-        System.out.println("🔍 RoleFilter checking: " + path + " for user role: " + user.getRoleId());
+        System.out.println("🔍 RoleFilter checking: " + path);
+        System.out.println("🔍 User in request: " + (user != null ? user.getEmail() + " (Role: " + user.getRoleId() + ")" : "null"));
+        
+        if (user == null) {
+            System.out.println("❌ RoleFilter: No authenticated user found for path: " + path);
+            
+            // ✅ DEBUG: Check all request attributes
+            System.out.println("🔍 DEBUG: All request attributes:");
+            java.util.Enumeration<String> attrs = httpRequest.getAttributeNames();
+            boolean hasAttributes = false;
+            while (attrs.hasMoreElements()) {
+                String attrName = attrs.nextElement();
+                Object attrValue = httpRequest.getAttribute(attrName);
+                System.out.println("   - " + attrName + " = " + (attrValue != null ? attrValue.getClass().getSimpleName() + ":" + attrValue : "null"));
+                hasAttributes = true;
+            }
+            if (!hasAttributes) {
+                System.out.println("   ❌ No request attributes found!");
+            }
+            
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/auth/login?redirect=" + 
+                                     httpRequest.getRequestURI());
+            return;
+        }
+        
+        System.out.println("✅ User found in RoleFilter: " + user.getEmail() + " with role: " + user.getRoleId());
         
         // Check role-based access
         if (path.startsWith("/admin/")) {
@@ -57,6 +76,8 @@ public class RoleFilter implements Filter {
                 System.out.println("❌ Access denied to admin area for role: " + user.getRoleId());
                 httpResponse.sendRedirect(httpRequest.getContextPath() + "/home?error=access_denied");
                 return;
+            } else {
+                System.out.println("✅ Admin access granted for user: " + user.getEmail());
             }
         }
         
@@ -83,6 +104,6 @@ public class RoleFilter implements Filter {
 
     @Override
     public void destroy() {
-        System.out.println("🗑️ RoleFilter destroyed at: 2025-10-21 03:34:17 UTC");
+        System.out.println("🗑️ RoleFilter destroyed at: 2025-10-21 14:38:00 UTC");
     }
 }

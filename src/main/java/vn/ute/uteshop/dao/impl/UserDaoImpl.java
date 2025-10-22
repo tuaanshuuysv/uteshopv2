@@ -8,7 +8,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * UserDaoImpl - Enhanced for User Management
+ * Updated: 2025-10-21 21:02:56 UTC by tuaanshuuysv
+ * Added: Complete CRUD operations for admin user management
+ */
 public class UserDaoImpl implements UserDao {
+
+    // ===== EXISTING METHODS (giữ nguyên code gốc) =====
 
     @Override
     public User findById(Integer id) {
@@ -173,6 +180,291 @@ public class UserDaoImpl implements UserDao {
         }
         return false;
     }
+
+    // ===== NEW METHODS FOR USER MANAGEMENT =====
+
+    @Override
+    public List<User> findAll() {
+        String sql = "SELECT * FROM users ORDER BY created_at DESC";
+        List<User> users = new ArrayList<>();
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            
+            System.out.println("✅ UserDao: Found " + users.size() + " users");
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error finding all users: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    @Override
+    public boolean delete(Integer userId) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, userId);
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                System.out.println("✅ UserDao: User deleted successfully: ID " + userId);
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error deleting user: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public List<User> findWithPagination(int offset, int limit) {
+        String sql = "SELECT * FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        List<User> users = new ArrayList<>();
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            
+            System.out.println("✅ UserDao: Found " + users.size() + " users with pagination (offset: " + offset + ", limit: " + limit + ")");
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error finding users with pagination: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    @Override
+    public int countAll() {
+        String sql = "SELECT COUNT(*) FROM users";
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                System.out.println("✅ UserDao: Total users count: " + count);
+                return count;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error counting users: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public List<User> findByRole(Integer roleId) {
+        String sql = "SELECT * FROM users WHERE role_id = ? ORDER BY created_at DESC";
+        List<User> users = new ArrayList<>();
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, roleId);
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            
+            System.out.println("✅ UserDao: Found " + users.size() + " users with role ID: " + roleId);
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error finding users by role: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    @Override
+    public List<User> findByActiveStatus(Boolean isActive) {
+        String sql = "SELECT * FROM users WHERE is_active = ? ORDER BY created_at DESC";
+        List<User> users = new ArrayList<>();
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setBoolean(1, isActive);
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            
+            System.out.println("✅ UserDao: Found " + users.size() + " users with active status: " + isActive);
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error finding users by active status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    @Override
+    public List<User> searchByKeyword(String keyword) {
+        String sql = "SELECT * FROM users WHERE email LIKE ? OR username LIKE ? OR full_name LIKE ? ORDER BY created_at DESC";
+        List<User> users = new ArrayList<>();
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            
+            System.out.println("✅ UserDao: Found " + users.size() + " users matching keyword: " + keyword);
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error searching users by keyword: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    @Override
+    public List<User> findWithFilters(String keyword, Integer roleId, Boolean isActive, int offset, int limit) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
+        List<Object> parameters = new ArrayList<>();
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (email LIKE ? OR username LIKE ? OR full_name LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            parameters.add(searchPattern);
+            parameters.add(searchPattern);
+            parameters.add(searchPattern);
+        }
+        
+        if (roleId != null) {
+            sql.append(" AND role_id = ?");
+            parameters.add(roleId);
+        }
+        
+        if (isActive != null) {
+            sql.append(" AND is_active = ?");
+            parameters.add(isActive);
+        }
+        
+        sql.append(" ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        parameters.add(limit);
+        parameters.add(offset);
+        
+        List<User> users = new ArrayList<>();
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < parameters.size(); i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            
+            System.out.println("✅ UserDao: Found " + users.size() + " users with filters (keyword: " + keyword + ", roleId: " + roleId + ", isActive: " + isActive + ")");
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error finding users with filters: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    @Override
+    public int countWithFilters(String keyword, Integer roleId, Boolean isActive) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE 1=1");
+        List<Object> parameters = new ArrayList<>();
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (email LIKE ? OR username LIKE ? OR full_name LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            parameters.add(searchPattern);
+            parameters.add(searchPattern);
+            parameters.add(searchPattern);
+        }
+        
+        if (roleId != null) {
+            sql.append(" AND role_id = ?");
+            parameters.add(roleId);
+        }
+        
+        if (isActive != null) {
+            sql.append(" AND is_active = ?");
+            parameters.add(isActive);
+        }
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < parameters.size(); i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+            
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                System.out.println("✅ UserDao: Count with filters: " + count);
+                return count;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error counting users with filters: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean updateLastLogin(Integer userId) {
+        String sql = "UPDATE users SET last_login = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
+        
+        try (Connection conn = DataSourceFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, userId);
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                System.out.println("✅ UserDao: Last login updated for user ID: " + userId);
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("❌ UserDao: Error updating last login: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ===== HELPER METHOD (giữ nguyên code gốc) =====
 
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();

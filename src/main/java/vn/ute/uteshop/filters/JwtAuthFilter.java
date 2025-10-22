@@ -14,9 +14,9 @@ import vn.ute.uteshop.common.AppConstants;
 import java.io.IOException;
 
 /**
- * JwtAuthFilter - Enhanced JWT Authentication Filter
- * Updated: 2025-10-21 00:40:12 UTC - Added enhanced debugging
- * Created by tuaanshuuysv
+ * JwtAuthFilter - FIXED Authentication Filter for UTESHOP-CPL
+ * Fixed: 2025-10-21 14:38:00 UTC by tuaanshuuysv
+ * Issue: Admin paths incorrectly marked as public
  */
 @WebFilter("/*")
 public class JwtAuthFilter implements Filter {
@@ -25,8 +25,9 @@ public class JwtAuthFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         userDao = new UserDaoImpl();
-        System.out.println("✅ JwtAuthFilter initialized successfully");
-        System.out.println("🕐 Init time: 2025-10-21 00:40:12 UTC");
+        System.out.println("✅ JwtAuthFilter FIXED initialized successfully");
+        System.out.println("🕐 Fixed time: 2025-10-21 14:38:00 UTC");
+        System.out.println("🔧 Fixed issue: Admin paths authentication");
         System.out.println("🔧 Cookie name: " + AppConstants.COOKIE_TOKEN);
     }
 
@@ -48,13 +49,33 @@ public class JwtAuthFilter implements Filter {
 
         System.out.println("🔍 JwtAuthFilter processing: " + path);
 
-        // Skip authentication for public paths
+        // ✅ FIX: ADMIN PATHS KHÔNG PHẢI PUBLIC
+        if (path.startsWith("/admin")) {
+            System.out.println("🔍 ADMIN ACCESS ATTEMPT:");
+            System.out.println("   Path: " + path);
+            System.out.println("   Session: " + (httpRequest.getSession(false) != null));
+            
+            // Check cookies
+            Cookie[] cookies = httpRequest.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (AppConstants.COOKIE_TOKEN.equals(cookie.getName())) {
+                        System.out.println("   JWT Cookie found: " + cookie.getName());
+                        System.out.println("   JWT Cookie value length: " + cookie.getValue().length());
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Check if path is public (KHÔNG BAO GỒM /admin/*)
         if (isPublicPath(path)) {
             System.out.println("🟢 Public path, skipping authentication: " + path);
             chain.doFilter(request, response);
             return;
         }
 
+        // ✅ ADMIN PATHS CẦN AUTHENTICATION
         System.out.println("🔒 Protected path, checking authentication: " + path);
 
         // Get JWT token from cookie
@@ -74,15 +95,18 @@ public class JwtAuthFilter implements Filter {
                         User user = userDao.findById(userId);
                         
                         if (user != null && user.getIsActive() && user.getIsVerified()) {
-                            // Set user in request attributes
+                            // ✅ SET USER IN REQUEST ATTRIBUTES
                             httpRequest.setAttribute(AppConstants.AUTH_USER_ATTR, user);
                             System.out.println("✅ User authenticated via JWT: " + user.getEmail() + " (Role: " + user.getRoleId() + ")");
-                            System.out.println("🎭 User details: " + user.getFullName() + " (ID: " + user.getUserId() + ")");
                             
-                            // Optional: Log token info for debugging
-                            if (System.getProperty("jwt.debug") != null) {
-                                JwtService.logTokenInfo(token);
+                            // ✅ THÊM DEBUG CHO ADMIN ROLE
+                            if (path.startsWith("/admin")) {
+                                System.out.println("🔍 ADMIN ACCESS CHECK:");
+                                System.out.println("   User Role: " + user.getRoleId());
+                                System.out.println("   Is Admin: " + (user.getRoleId() == 4));
+                                System.out.println("   User set in request: " + (httpRequest.getAttribute(AppConstants.AUTH_USER_ATTR) != null));
                             }
+                            
                         } else {
                             System.out.println("⚠️ User found but inactive/unverified: " + (user != null ? user.getEmail() : "null"));
                             if (user != null) {
@@ -94,38 +118,28 @@ public class JwtAuthFilter implements Filter {
                     }
                 } else {
                     System.out.println("⚠️ Invalid or expired JWT token");
-                    
-                    // Clear invalid token cookie
                     clearTokenCookie(httpResponse);
                 }
             } catch (Exception e) {
                 System.err.println("❌ Error processing JWT token: " + e.getMessage());
                 e.printStackTrace();
-                
-                // Clear invalid token cookie
                 clearTokenCookie(httpResponse);
             }
         } else {
             System.out.println("🍪 No JWT token found in cookies");
             
-            // Debug: List all cookies
-            Cookie[] cookies = httpRequest.getCookies();
-            if (cookies != null) {
-                System.out.println("🔍 Available cookies:");
-                for (Cookie cookie : cookies) {
-                    System.out.println("   - " + cookie.getName() + " = " + 
-                        (cookie.getValue().length() > 50 ? 
-                            cookie.getValue().substring(0, 50) + "..." : 
-                            cookie.getValue()));
-                }
-            } else {
-                System.out.println("🔍 No cookies found in request");
+            // ✅ DEBUG CHO ADMIN ACCESS WITHOUT TOKEN
+            if (path.startsWith("/admin")) {
+                System.out.println("❌ ADMIN ACCESS DENIED: No JWT token for path: " + path);
             }
         }
 
         chain.doFilter(request, response);
     }
 
+    /**
+     * ✅ FIXED: Check if path is public (KHÔNG BAO GỒM /admin/*)
+     */
     private boolean isPublicPath(String path) {
         String[] publicPaths = {
             "/auth/login", "/auth/register", "/auth/verify-otp", 
@@ -133,6 +147,7 @@ public class JwtAuthFilter implements Filter {
             "/", "/home", "/product", "/category", "/search",
             "/assets/", "/WEB-INF/", "/error/", "/favicon.ico",
             "/css/", "/js/", "/images/", "/fonts/"
+            // ❌ REMOVED: "/admin/" - Admin paths are NOT public
         };
 
         for (String publicPath : publicPaths) {
@@ -140,6 +155,13 @@ public class JwtAuthFilter implements Filter {
                 return true;
             }
         }
+        
+        // ✅ ADMIN PATHS ARE PROTECTED
+        if (path.startsWith("/admin")) {
+            System.out.println("🔒 Admin path detected as PROTECTED: " + path);
+            return false;
+        }
+        
         return false;
     }
 
@@ -167,6 +189,6 @@ public class JwtAuthFilter implements Filter {
 
     @Override
     public void destroy() {
-        System.out.println("🔄 JwtAuthFilter destroyed at: 2025-10-21 00:40:12 UTC");
+        System.out.println("🔄 JwtAuthFilter destroyed at: 2025-10-21 14:38:00 UTC");
     }
 }

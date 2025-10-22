@@ -1,23 +1,24 @@
-<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<header class="navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm">
+<header class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-        <!-- Brand -->
-        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/">
-            <i class="fas fa-store"></i> UTESHOP-CPL
+        <!-- Brand/logo -->
+        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/home">
+            <i class="fas fa-shopping-cart"></i> UTESHOP-CPL
         </a>
         
-        <!-- Toggle button for mobile -->
+        <!-- Mobile menu button -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         
-        <!-- Navigation -->
+        <!-- Navigation menu -->
         <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Main navigation -->
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/home">
                         <i class="fas fa-home"></i> Trang chủ
                     </a>
                 </li>
@@ -57,7 +58,8 @@
                                 </c:if>
                                 <c:if test="${authUser.roleId == 4}">
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/dashboard">
+                                    <!-- 🚨 FIXED: Sử dụng direct admin controller -->
+                                    <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin-direct">
                                         <i class="fas fa-cogs"></i> Quản trị hệ thống
                                     </a></li>
                                 </c:if>

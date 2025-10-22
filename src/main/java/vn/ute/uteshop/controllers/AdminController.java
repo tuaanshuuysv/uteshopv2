@@ -13,19 +13,19 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * AdminController - Admin Dashboard Controller for UTESHOP-CPL
- * Created: 2025-10-21 03:29:03 UTC by tuaanshuuysv
- * Features: User management, Shop management, Product management, Categories, Discounts, Shipping
+ * AdminController - Fixed Admin Dashboard Controller for UTESHOP-CPL
+ * Updated: 2025-10-21 14:28:00 UTC by tuaanshuuysv
+ * Fixed: URL mapping và debugging issue
  */
-@WebServlet(urlPatterns = {"/admin", "/admin/home", "/admin/dashboard"})
+@WebServlet(urlPatterns = {"/admin", "/admin/", "/admin/home", "/admin/dashboard"})
 public class AdminController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
         System.out.println("✅ AdminController initialized successfully");
-        System.out.println("🕐 Init time: 2025-10-21 03:29:03 UTC");
-        System.out.println("👨‍💻 Created by: tuaanshuuysv");
-        System.out.println("👑 Admin features: Users, Shops, Products, Categories, Discounts, Shipping");
+        System.out.println("🕐 Fixed: 2025-10-21 14:28:00 UTC");
+        System.out.println("👨‍💻 Fixed by: tuaanshuuysv");
+        System.out.println("👑 Fixed URL mappings: /admin, /admin/, /admin/home, /admin/dashboard");
     }
 
     @Override
@@ -33,22 +33,34 @@ public class AdminController extends HttpServlet {
             throws ServletException, IOException {
         
         String path = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        
+        // Remove context path from URI
+        if (path.startsWith(contextPath)) {
+            path = path.substring(contextPath.length());
+        }
+        
         System.out.println("🔄 Admin GET request to: " + path);
+        System.out.println("🔍 Full URI: " + request.getRequestURI());
+        System.out.println("🔍 Context path: " + contextPath);
         
         try {
             // Check if user is authenticated and has admin role
             User authUser = (User) request.getAttribute(AppConstants.AUTH_USER_ATTR);
             
             if (authUser == null) {
-                System.out.println("❌ No authenticated user found");
-                response.sendRedirect(request.getContextPath() + "/auth/login");
+                System.out.println("❌ No authenticated user found for admin access");
+                response.sendRedirect(request.getContextPath() + "/auth/login?redirect=" + 
+                                     request.getRequestURI());
                 return;
             }
             
+            System.out.println("👤 User found: " + authUser.getEmail() + " (Role: " + authUser.getRoleId() + ")");
+            
             // Check admin role (4)
             if (authUser.getRoleId() != 4) {
-                System.out.println("❌ Access denied. User role: " + authUser.getRoleId());
-                response.sendRedirect(request.getContextPath() + "/home");
+                System.out.println("❌ Access denied to admin area. User role: " + authUser.getRoleId());
+                response.sendRedirect(request.getContextPath() + "/home?error=access_denied");
                 return;
             }
             
@@ -69,6 +81,8 @@ public class AdminController extends HttpServlet {
             // Set view for decorator pattern
             request.setAttribute("view", "/WEB-INF/views/admin/home.jsp");
             
+            System.out.println("📄 Forwarding to main decorator with admin home view");
+            
             // Forward to main decorator
             request.getRequestDispatcher("/WEB-INF/decorators/main.jsp").forward(request, response);
             
@@ -76,7 +90,7 @@ public class AdminController extends HttpServlet {
             System.err.println("❌ Error in AdminController: " + e.getMessage());
             e.printStackTrace();
             
-            request.setAttribute("error", "Có lỗi xảy ra khi tải dashboard admin");
+            request.setAttribute("error", "Có lỗi xảy ra khi tải dashboard admin: " + e.getMessage());
             request.setAttribute("pageTitle", "Lỗi - Admin Dashboard");
             request.setAttribute("view", "/WEB-INF/views/admin/home.jsp");
             request.getRequestDispatcher("/WEB-INF/decorators/main.jsp").forward(request, response);
@@ -87,6 +101,8 @@ public class AdminController extends HttpServlet {
      * Set admin dashboard data (mock data for UI demonstration)
      */
     private void setAdminDashboardData(HttpServletRequest request) {
+        System.out.println("📊 Setting admin dashboard data...");
+        
         // System overview
         request.setAttribute("totalUsers", "15,234");
         request.setAttribute("totalShops", "1,456");
@@ -116,7 +132,7 @@ public class AdminController extends HttpServlet {
         request.setAttribute("databaseStatus", "online");
         request.setAttribute("apiStatus", "online");
         
-        System.out.println("📊 Admin dashboard data set successfully");
+        System.out.println("✅ Admin dashboard data set successfully");
     }
 
     @Override
@@ -132,7 +148,7 @@ public class AdminController extends HttpServlet {
 
     @Override
     public void destroy() {
-        System.out.println("🗑️ AdminController destroyed at: 2025-10-21 03:29:03 UTC");
+        System.out.println("🗑️ AdminController destroyed at: 2025-10-21 14:28:00 UTC");
         super.destroy();
     }
 }
