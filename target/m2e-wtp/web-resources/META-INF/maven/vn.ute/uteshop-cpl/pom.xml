@@ -212,6 +212,11 @@
 			<version>2.0.9</version>
 		</dependency>
 
+		<dependency>
+			<groupId>vn.ute</groupId>
+			<artifactId>uteshop</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>

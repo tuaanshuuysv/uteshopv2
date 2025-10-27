@@ -1,0 +1,17 @@
+
+.header .cart-count,
+.header .wishlist-count,
+.icon-badge--cart,
+.icon-badge--wishlist,
+.badge.badge-cart-count,
+.badge.badge-wishlist-count,
+.cart-count-badge,
+.wishlist-count-badge,
+[data-role="cart-count"],
+[data-role="wishlist-count"],
+.header .icon-cart sup,
+.header .icon-wishlist sup,
+.header .icon-cart .badge,
+.header .icon-wishlist .badge {
+  display: none !important;
+}

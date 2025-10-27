@@ -9,13 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * UserDaoImpl - Enhanced for User Management
- * Updated: 2025-10-21 21:02:56 UTC by tuaanshuuysv
- * Added: Complete CRUD operations for admin user management
+ * UserDaoImpl - COMPLETELY FIXED VERSION
+ * Updated: 2025-10-26 18:53:28 UTC by tuaanshuuysv
+ * Fixed: Line 120 - setTimestamp(LocalDateTime) error
  */
 public class UserDaoImpl implements UserDao {
-
-    // ===== EXISTING METHODS (giữ nguyên code gốc) =====
 
     @Override
     public User findById(Integer id) {
@@ -117,7 +115,8 @@ public class UserDaoImpl implements UserDao {
             stmt.setString(4, user.getPhone());
             stmt.setBoolean(5, user.getIsActive());
             stmt.setBoolean(6, user.getIsVerified());
-            stmt.setTimestamp(7, user.getLastLogin());
+            // FIXED: Line 120 - Use getLastLoginTimestamp() instead of getLastLogin()
+            stmt.setTimestamp(7, user.getLastLoginTimestamp());
             stmt.setInt(8, user.getUserId());
             
             return stmt.executeUpdate() > 0;
@@ -180,8 +179,6 @@ public class UserDaoImpl implements UserDao {
         }
         return false;
     }
-
-    // ===== NEW METHODS FOR USER MANAGEMENT =====
 
     @Override
     public List<User> findAll() {
@@ -464,8 +461,7 @@ public class UserDaoImpl implements UserDao {
         return false;
     }
 
-    // ===== HELPER METHOD (giữ nguyên code gốc) =====
-
+    // FIXED: mapResultSetToUser with proper Timestamp handling
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUserId(rs.getInt("user_id"));
@@ -481,9 +477,12 @@ public class UserDaoImpl implements UserDao {
         user.setRoleId(rs.getInt("role_id"));
         user.setIsActive(rs.getBoolean("is_active"));
         user.setIsVerified(rs.getBoolean("is_verified"));
+        
+        // FIXED: Use setCreatedAt(Timestamp) instead of LocalDateTime
         user.setCreatedAt(rs.getTimestamp("created_at"));
         user.setUpdatedAt(rs.getTimestamp("updated_at"));
         user.setLastLogin(rs.getTimestamp("last_login"));
+        
         return user;
     }
 }

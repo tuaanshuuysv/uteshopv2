@@ -743,7 +743,7 @@ public class AuthService {
         }
 
         // Check role ID
-        if (request.getRoleId() == null) {
+        if (request.getRoleId() <=0) {
             System.err.println("❌ Role ID is null");
             return false;
         }
